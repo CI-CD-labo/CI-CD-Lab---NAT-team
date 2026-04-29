@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CI/CD Lab</title>
+  <style>
+    body { font-family: Arial; max-width: 700px; margin: 40px auto; padding: 20px; }
+    .card { background: #f5f5f5; border-radius: 8px; padding: 16px; margin: 12px 0; }
+    button { background: #326CE5; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    input { padding: 10px; width: 300px; border: 1px solid #ddd; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>CI/CD Lab - TheodoreAlSammour-AliAwad-NourHamieh</h1>
+  <div class="card" id="health">Loading health...</div>
+  <div class="card" id="visits">Loading visits...</div>
+  <div class="card">
+    <input id="msg" placeholder="Type a message">
+    <button onclick="send()">Send</button>
+  </div>
+  <div id="messages"></div>
+  <script>
+    const api = "/api";
+
+    fetch(api + "/health").then(r => r.json()).then(d => {
+      document.getElementById("health").innerHTML =
+        "<b>Health:</b> " + d.status + " | <b>Redis:</b> " + d.redis + " | <b>Pod:</b> " + d.pod;
+    });
+
+    fetch(api + "/visits").then(r => r.json()).then(d => {
+      document.getElementById("visits").innerHTML =
+        "<b>Total visits:</b> " + d.visits + " | <b>Served by pod:</b> " + d.pod;
+    });
+
+    function load() {
+      fetch(api + "/messages").then(r => r.json()).then(msgs => {
+        document.getElementById("messages").innerHTML = msgs.map(m =>
+          '<div class="card"><b>' + m.pod + "</b>: " + m.text + " <small>(" + m.time + ")</small></div>"
+        ).join("");
+      });
+    }
+
+    function send() {
+      fetch(api + "/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: document.getElementById("msg").value })
+      }).then(() => {
+        document.getElementById("msg").value = "";
+        load();
+      });
+    }
+
+    load();
+  </script>
+</body>
+</html>
